@@ -5,6 +5,11 @@ import AppKit
 let folder = URL(fileURLWithPath: "Simmer/Assets.xcassets/AppIcon.appiconset")
 try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
 
+func color(_ hex: UInt32, alpha: CGFloat = 1) -> CGColor {
+    CGColor(red: CGFloat((hex >> 16) & 0xFF) / 255, green: CGFloat((hex >> 8) & 0xFF) / 255,
+            blue: CGFloat(hex & 0xFF) / 255, alpha: alpha)
+}
+
 func drawIcon(pixels: Int) -> Data {
     let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: pixels, pixelsHigh: pixels,
                                bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
@@ -22,36 +27,41 @@ func drawIcon(pixels: Int) -> Data {
     context.setShadow(offset: CGSize(width: 0, height: -10), blur: 24,
                       color: NSColor.black.withAlphaComponent(0.3).cgColor)
     context.addPath(tilePath)
-    context.setFillColor(NSColor(red: 0.95, green: 0.35, blue: 0.15, alpha: 1).cgColor)
+    context.setFillColor(color(0x0E3A1D))
     context.fillPath()
     context.restoreGState()
 
+    // Deep green, lighter at the top, with a soft glow behind the gem.
+    let space = CGColorSpaceCreateDeviceRGB()
     context.saveGState()
     context.addPath(tilePath)
     context.clip()
-    let colors = [NSColor(red: 1.0, green: 0.72, blue: 0.22, alpha: 1).cgColor,
-                  NSColor(red: 0.93, green: 0.22, blue: 0.2, alpha: 1).cgColor] as CFArray
-    let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: colors, locations: [0, 1])!
-    context.drawLinearGradient(gradient, start: CGPoint(x: 512, y: 924), end: CGPoint(x: 512, y: 100), options: [])
+    let tileColors = [color(0x215A31), color(0x071F10)] as CFArray
+    let tileGradient = CGGradient(colorsSpace: space, colors: tileColors, locations: [0, 1])!
+    context.drawLinearGradient(tileGradient, start: CGPoint(x: 512, y: 924), end: CGPoint(x: 512, y: 100), options: [])
+    let glowColors = [color(0x7DFF6A, alpha: 0.45), color(0x7DFF6A, alpha: 0)] as CFArray
+    let glow = CGGradient(colorsSpace: space, colors: glowColors, locations: [0, 1])!
+    let middle = CGPoint(x: 512, y: 512)
+    context.drawRadialGradient(glow, startCenter: middle, startRadius: 0, endCenter: middle, endRadius: 380, options: [])
     context.restoreGState()
 
-    // A phone outline.
-    let white = NSColor.white.cgColor
-    let phone = CGRect(x: 347, y: 232, width: 330, height: 560)
-    context.addPath(CGPath(roundedRect: phone, cornerWidth: 72, cornerHeight: 72, transform: nil))
-    context.setStrokeColor(white)
-    context.setLineWidth(40)
-    context.strokePath()
-
-    // A power symbol on its screen: a ring open at the top, and a bar.
-    let center = CGPoint(x: 512, y: 498)
-    context.setLineCap(.round)
-    context.setLineWidth(36)
-    context.addArc(center: center, radius: 78, startAngle: .pi / 2 - 0.62, endAngle: .pi / 2 + 0.62, clockwise: true)
-    context.strokePath()
-    context.move(to: CGPoint(x: center.x, y: center.y + 22))
-    context.addLine(to: CGPoint(x: center.x, y: center.y + 104))
-    context.strokePath()
+    // The gem: four facets around a point just below the middle, each a
+    // different green so it reads as lit from the top left.
+    let top = CGPoint(x: 512, y: 812), bottom = CGPoint(x: 512, y: 212)
+    let left = CGPoint(x: 332, y: 532), right = CGPoint(x: 692, y: 532)
+    let front = CGPoint(x: 512, y: 492)
+    let facets: [([CGPoint], UInt32)] = [
+        ([top, left, front], 0xB4F78E),
+        ([top, front, right], 0x5FD94A),
+        ([left, bottom, front], 0x34B440),
+        ([front, bottom, right], 0x1A8734),
+    ]
+    for (points, hex) in facets {
+        context.addLines(between: points)
+        context.closePath()
+        context.setFillColor(color(hex))
+        context.fillPath()
+    }
 
     NSGraphicsContext.restoreGraphicsState()
     return rep.representation(using: .png, properties: [:])!
