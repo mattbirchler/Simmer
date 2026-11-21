@@ -31,6 +31,7 @@ struct MenuView: View {
             // Runs only while the menu is open.
             while !Task.isCancelled {
                 monitor.refresh()
+                monitor.loadMemory()
                 monitor.loadPreviews()
                 try? await Task.sleep(for: .seconds(5))
             }
@@ -40,6 +41,12 @@ struct MenuView: View {
     private var header: some View {
         HStack {
             Text(title).font(.headline)
+            if monitor.memoryInUse > 0 {
+                Text(Self.memory(monitor.memoryInUse))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .accessibilityLabel("Using \(Self.memory(monitor.memoryInUse)) of memory")
+            }
             Spacer()
             if monitor.simulators.count > 1 {
                 Button("Shut Down All") { monitor.shutDownAll() }
@@ -52,6 +59,13 @@ struct MenuView: View {
 
     private var title: String {
         monitor.simulators.count == 1 ? "1 simulator running" : "\(monitor.simulators.count) simulators running"
+    }
+
+    /// "3.1 GB", or "640 MB" below a gigabyte.
+    static func memory(_ bytes: UInt64) -> String {
+        let megabytes = Double(bytes) / 1_048_576
+        if megabytes < 1024 { return "\(Int(megabytes.rounded())) MB" }
+        return String(format: "%.1f GB", megabytes / 1024)
     }
 
     /// The gem, unlit, laid out like one of the simulator rows.
@@ -92,19 +106,41 @@ struct MenuView: View {
 
     private var footer: some View {
         HStack {
-            Toggle("Open at Login", isOn: Binding(
-                get: { opensAtLogin },
-                set: { setOpensAtLogin($0) }
-            ))
-            .toggleStyle(.checkbox)
+            Text("Simmer \(Self.version)")
+                .font(.caption)
+                .foregroundStyle(.secondary)
             Spacer()
-            Button("Quit") { NSApplication.shared.terminate(nil) }
-                .keyboardShortcut("q")
+            Menu {
+                Toggle("Open at Login", isOn: Binding(
+                    get: { opensAtLogin },
+                    set: { setOpensAtLogin($0) }
+                ))
+                Button("About Simmer") {
+                    NSApplication.shared.activate(ignoringOtherApps: true)
+                    NSApplication.shared.orderFrontStandardAboutPanel(nil)
+                }
+                Divider()
+                Button("Quit Simmer") { NSApplication.shared.terminate(nil) }
+            } label: {
+                Image(systemName: "gearshape")
+                    .accessibilityLabel("Settings")
+            }
+            .menuStyle(.borderlessButton)
+            .menuIndicator(.hidden)
+            .fixedSize()
         }
-        .controlSize(.small)
         .padding(.horizontal, 14)
-        .padding(.vertical, 10)
+        .padding(.vertical, 8)
+        // Keeps Command-Q working while the gear menu is closed.
+        .background {
+            Button("Quit Simmer") { NSApplication.shared.terminate(nil) }
+                .keyboardShortcut("q")
+                .opacity(0)
+                .accessibilityHidden(true)
+        }
     }
+
+    private static let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
 
     private func setOpensAtLogin(_ enabled: Bool) {
         do {

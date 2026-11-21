@@ -10,6 +10,9 @@ final class SimulatorMonitor {
     private(set) var previews: [String: NSImage] = [:]
     /// Simulators that have been told to shut down and haven't gone yet.
     private(set) var shuttingDown: Set<String> = []
+    /// Bytes of memory held by all running simulators. Zero until the menu
+    /// has been opened.
+    private(set) var memoryInUse: UInt64 = 0
     /// Updated on every check so "running for" times stay current.
     private(set) var now = Date()
 
@@ -69,6 +72,13 @@ final class SimulatorMonitor {
             shuttingDown.formIntersection(ids)
         }
         now = Date()
+    }
+
+    /// Adds up the memory the running simulators hold. Called while the
+    /// menu is open, never in the background.
+    func loadMemory() {
+        let held = SimulatorScanner.memory(of: Set(simulators.map(\.pid)))
+        memoryInUse = held.values.reduce(0, +)
     }
 
     /// Fetches a fresh picture of every simulator's screen. Called while the
