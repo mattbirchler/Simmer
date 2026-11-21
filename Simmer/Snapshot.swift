@@ -31,6 +31,7 @@ enum Snapshot {
 
     static func save(_ monitor: SimulatorMonitor, to file: URL) async {
         monitor.refresh()
+        monitor.loadMemory()
         monitor.loadPreviews()
         // Give the screen pictures a moment to come back.
         for _ in 0..<40 where monitor.previews.count < monitor.simulators.count {

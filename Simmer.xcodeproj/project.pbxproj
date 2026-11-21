@@ -14,11 +14,13 @@
 		9356898C3922B0D77F27131E /* SimulatorMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50FE6B979F72B2412D47C92 /* SimulatorMonitor.swift */; };
 		935E422A0D02007DC4F686C9 /* Simulator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DD7B778476B32BABCC9C353 /* Simulator.swift */; };
 		A91A4EE4DABBD9B19DF9DD38 /* SimulatorScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2718C679A5E06DCE9B6E09F4 /* SimulatorScanner.swift */; };
+		BC745BAEC695DB6DE2942EC6 /* Gem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363B559D9C5EB137BF198B48 /* Gem.swift */; };
 		D740E29ACBE50CFFE94F298E /* Snapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E73F6EF8B29AD3E61F2E3E5 /* Snapshot.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		2718C679A5E06DCE9B6E09F4 /* SimulatorScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatorScanner.swift; sourceTree = "<group>"; };
+		363B559D9C5EB137BF198B48 /* Gem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Gem.swift; sourceTree = "<group>"; };
 		3DD7B778476B32BABCC9C353 /* Simulator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Simulator.swift; sourceTree = "<group>"; };
 		701A018823899CD83A9C5CC9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		891F41F5E2476F97B9ED89A4 /* SimulatorControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatorControl.swift; sourceTree = "<group>"; };
@@ -42,6 +44,7 @@
 			isa = PBXGroup;
 			children = (
 				701A018823899CD83A9C5CC9 /* Assets.xcassets */,
+				363B559D9C5EB137BF198B48 /* Gem.swift */,
 				AA86F2C44BBF374D4F04CF7A /* MenuView.swift */,
 				BFBB9E0D8B7A6B02B5B8F52D /* SimmerApp.swift */,
 				3DD7B778476B32BABCC9C353 /* Simulator.swift */,
@@ -132,6 +135,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BC745BAEC695DB6DE2942EC6 /* Gem.swift in Sources */,
 				8CC64C490DC6EC73ECE35378 /* MenuView.swift in Sources */,
 				4CFA55677F127BF74C308436 /* SimmerApp.swift in Sources */,
 				935E422A0D02007DC4F686C9 /* Simulator.swift in Sources */,

@@ -76,10 +76,51 @@ enum SimulatorScanner {
     }
 
     private static func startDate(of pid: pid_t) -> Date? {
+        guard let info = details(of: pid) else { return nil }
+        return Date(timeIntervalSince1970: TimeInterval(info.pbi_start_tvsec))
+    }
+
+    private static func details(of pid: pid_t) -> proc_bsdinfo? {
         var info = proc_bsdinfo()
         let size = Int32(MemoryLayout<proc_bsdinfo>.size)
         guard proc_pidinfo(pid, PROC_PIDTBSDINFO, 0, &info, size) == size else { return nil }
-        return Date(timeIntervalSince1970: TimeInterval(info.pbi_start_tvsec))
+        return info
+    }
+
+    /// The memory each simulator holds, counting everything running inside
+    /// it, by the simulator's process ID. Every process in a simulator
+    /// descends from its `launchd_sim`.
+    static func memory(of simulators: Set<pid_t>) -> [pid_t: UInt64] {
+        guard !simulators.isEmpty else { return [:] }
+        var parents: [pid_t: pid_t] = [:]
+        for pid in allProcessIDs() {
+            if let info = details(of: pid) { parents[pid] = pid_t(info.pbi_ppid) }
+        }
+        var totals: [pid_t: UInt64] = [:]
+        for pid in parents.keys {
+            // Walk up the family tree until a simulator, or the top.
+            var current = pid
+            var steps = 0
+            while !simulators.contains(current), let parent = parents[current], parent != current, steps < 32 {
+                current = parent
+                steps += 1
+            }
+            if simulators.contains(current) {
+                totals[current, default: 0] += footprint(of: pid)
+            }
+        }
+        return totals
+    }
+
+    /// The figure Activity Monitor shows in its Memory column.
+    private static func footprint(of pid: pid_t) -> UInt64 {
+        var usage = rusage_info_v2()
+        let result = withUnsafeMutablePointer(to: &usage) {
+            $0.withMemoryRebound(to: rusage_info_t?.self, capacity: 1) {
+                proc_pid_rusage(pid, RUSAGE_INFO_V2, $0)
+            }
+        }
+        return result == 0 ? usage.ri_phys_footprint : 0
     }
 
     /// The arguments a process was started with.

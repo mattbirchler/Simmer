@@ -8,14 +8,15 @@ struct MenuView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            header
-            Divider()
             if monitor.simulators.isEmpty {
                 emptyState
             } else {
+                header
+                Divider()
                 VStack(spacing: 0) {
                     ForEach(monitor.simulators) { simulator in
                         SimulatorRow(simulator: simulator)
+                            .transition(.move(edge: .trailing).combined(with: .opacity))
                     }
                 }
                 .padding(.vertical, 4)
@@ -24,10 +25,13 @@ struct MenuView: View {
             footer
         }
         .frame(width: 350)
+        // Rows slide away as their simulators stop, instead of vanishing.
+        .animation(.snappy(duration: 0.3), value: monitor.simulators)
         .task {
             // Runs only while the menu is open.
             while !Task.isCancelled {
                 monitor.refresh()
+                monitor.loadMemory()
                 monitor.loadPreviews()
                 try? await Task.sleep(for: .seconds(5))
             }
@@ -37,6 +41,12 @@ struct MenuView: View {
     private var header: some View {
         HStack {
             Text(title).font(.headline)
+            if monitor.memoryInUse > 0 {
+                Text(Self.memory(monitor.memoryInUse))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .accessibilityLabel("Using \(Self.memory(monitor.memoryInUse)) of memory")
+            }
             Spacer()
             if monitor.simulators.count > 1 {
                 Button("Shut Down All") { monitor.shutDownAll() }
@@ -48,43 +58,89 @@ struct MenuView: View {
     }
 
     private var title: String {
-        switch monitor.simulators.count {
-        case 0: "Simulators"
-        case 1: "1 simulator running"
-        default: "\(monitor.simulators.count) simulators running"
-        }
+        monitor.simulators.count == 1 ? "1 simulator running" : "\(monitor.simulators.count) simulators running"
     }
 
+    /// "3.1 GB", or "640 MB" below a gigabyte.
+    static func memory(_ bytes: UInt64) -> String {
+        let megabytes = Double(bytes) / 1_048_576
+        if megabytes < 1024 { return "\(Int(megabytes.rounded())) MB" }
+        return String(format: "%.1f GB", megabytes / 1024)
+    }
+
+    /// The gem, unlit, laid out like one of the simulator rows.
     private var emptyState: some View {
-        VStack(spacing: 6) {
-            Image(systemName: "checkmark.circle")
-                .font(.system(size: 28, weight: .light))
-                .foregroundStyle(.green)
-            Text("No simulators running")
-                .font(.callout)
-            Text("Nothing is using your battery in the background.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+        HStack(spacing: 12) {
+            GemOutline()
+                .stroke(.tertiary, style: StrokeStyle(lineWidth: 1.5, lineJoin: .round))
+                .frame(width: 22, height: 36)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Nothing running")
+                    .font(.body.weight(.medium))
+                Text(emptyDetail)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 22)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 16)
+    }
+
+    private var emptyDetail: String {
+        guard let last = monitor.lastShutDown else { return "Simulators you start will show up here." }
+        return "Last shut down: \(last.name), \(Self.timeAgo(from: last.date, to: monitor.now))"
+    }
+
+    static func timeAgo(from start: Date, to end: Date) -> String {
+        let minutes = max(0, Int(end.timeIntervalSince(start)) / 60)
+        if minutes < 1 { return "just now" }
+        if minutes < 60 { return minutes == 1 ? "1 minute ago" : "\(minutes) minutes ago" }
+        let hours = minutes / 60
+        if hours < 24 { return hours == 1 ? "1 hour ago" : "\(hours) hours ago" }
+        let days = hours / 24
+        return days == 1 ? "yesterday" : "\(days) days ago"
     }
 
     private var footer: some View {
         HStack {
-            Toggle("Open at Login", isOn: Binding(
-                get: { opensAtLogin },
-                set: { setOpensAtLogin($0) }
-            ))
-            .toggleStyle(.checkbox)
+            Text("Simmer \(Self.version)")
+                .font(.caption)
+                .foregroundStyle(.secondary)
             Spacer()
-            Button("Quit") { NSApplication.shared.terminate(nil) }
-                .keyboardShortcut("q")
+            Menu {
+                Toggle("Open at Login", isOn: Binding(
+                    get: { opensAtLogin },
+                    set: { setOpensAtLogin($0) }
+                ))
+                Button("About Simmer") {
+                    NSApplication.shared.activate(ignoringOtherApps: true)
+                    NSApplication.shared.orderFrontStandardAboutPanel(nil)
+                }
+                Divider()
+                Button("Quit Simmer") { NSApplication.shared.terminate(nil) }
+            } label: {
+                Image(systemName: "gearshape")
+                    .accessibilityLabel("Settings")
+            }
+            .menuStyle(.borderlessButton)
+            .menuIndicator(.hidden)
+            .fixedSize()
         }
-        .controlSize(.small)
         .padding(.horizontal, 14)
-        .padding(.vertical, 10)
+        .padding(.vertical, 8)
+        // Keeps Command-Q working while the gear menu is closed.
+        .background {
+            Button("Quit Simmer") { NSApplication.shared.terminate(nil) }
+                .keyboardShortcut("q")
+                .opacity(0)
+                .accessibilityHidden(true)
+        }
     }
+
+    private static let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
 
     private func setOpensAtLogin(_ enabled: Bool) {
         do {
@@ -109,24 +165,33 @@ private struct SimulatorRow: View {
     var body: some View {
         HStack(spacing: 12) {
             preview
-            VStack(alignment: .leading, spacing: 2) {
+                .opacity(isShuttingDown ? 0.5 : 1)
+            VStack(alignment: .leading, spacing: 3) {
                 Text(simulator.name)
                     .font(.body.weight(.medium))
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
-                if !subtitle.isEmpty {
-                    Text(subtitle)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
+                if !simulator.runtime.isEmpty || simulator.origin != nil {
+                    HStack(spacing: 5) {
+                        if !simulator.runtime.isEmpty {
+                            Text(simulator.runtime)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                        }
+                        if let origin = simulator.origin {
+                            originChip(origin)
+                        }
+                    }
                 }
-                Text(Self.runningTime(from: simulator.bootedAt, to: monitor.now))
-                    .font(.caption)
-                    .foregroundStyle(isLongRunning ? AnyShapeStyle(.orange) : AnyShapeStyle(.secondary))
+                timePill
             }
+            .opacity(isShuttingDown ? 0.5 : 1)
             Spacer(minLength: 4)
             if isShuttingDown {
-                ProgressView().controlSize(.small)
+                Text("Shutting down…")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             } else {
                 Button("Shut Down") { monitor.shutDown(simulator) }
                     .controlSize(.small)
@@ -134,17 +199,36 @@ private struct SimulatorRow: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 6)
-        .opacity(isShuttingDown ? 0.5 : 1)
+        .animation(.default, value: isShuttingDown)
     }
 
-    private var subtitle: String {
-        [simulator.runtime, simulator.origin ?? ""].filter { !$0.isEmpty }.joined(separator: " · ")
+    /// Marks the simulators Xcode started on its own, the easiest to forget.
+    private func originChip(_ origin: String) -> some View {
+        Text(origin)
+            .font(.system(size: 10))
+            .foregroundStyle(.secondary)
+            .lineLimit(1)
+            .fixedSize()
+            .padding(.horizontal, 5)
+            .padding(.vertical, 1)
+            .overlay(RoundedRectangle(cornerRadius: 4, style: .continuous).strokeBorder(.tertiary, lineWidth: 1))
     }
 
-    /// Left on for two hours or more, which usually means forgotten.
-    private var isLongRunning: Bool {
-        monitor.now.timeIntervalSince(simulator.bootedAt) >= 2 * 60 * 60
+    /// How long it has been running. Filled orange once it looks forgotten,
+    /// so the warning doesn't rest on the text color alone.
+    private var timePill: some View {
+        let time = Self.runningTime(from: simulator.bootedAt, to: monitor.now)
+        return Text(time)
+            .font(.caption.weight(isLongRunning ? .semibold : .regular))
+            .foregroundStyle(isLongRunning ? AnyShapeStyle(.orange) : AnyShapeStyle(.secondary))
+            .padding(.horizontal, 7)
+            .padding(.vertical, 1)
+            .background(Capsule().fill(isLongRunning ? Color.orange.opacity(0.18) : Color.primary.opacity(0.07)))
+            .accessibilityLabel(time == "Just started" ? time
+                                : isLongRunning ? "Running for \(time), probably forgotten" : "Running for \(time)")
     }
+
+    private var isLongRunning: Bool { monitor.isForgotten(simulator) }
 
     @ViewBuilder
     private var preview: some View {
@@ -169,9 +253,9 @@ private struct SimulatorRow: View {
     static func runningTime(from start: Date, to end: Date) -> String {
         let minutes = max(0, Int(end.timeIntervalSince(start)) / 60)
         if minutes < 1 { return "Just started" }
-        if minutes < 60 { return "Running for \(minutes)m" }
+        if minutes < 60 { return "\(minutes)m" }
         let hours = minutes / 60
-        if hours < 24 { return "Running for \(hours)h \(minutes % 60)m" }
-        return "Running for \(hours / 24)d \(hours % 24)h"
+        if hours < 24 { return "\(hours)h \(minutes % 60)m" }
+        return "\(hours / 24)d \(hours % 24)h"
     }
 }

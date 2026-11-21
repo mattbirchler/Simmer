@@ -10,13 +10,32 @@ final class SimulatorMonitor {
     private(set) var previews: [String: NSImage] = [:]
     /// Simulators that have been told to shut down and haven't gone yet.
     private(set) var shuttingDown: Set<String> = []
+    /// Bytes of memory held by all running simulators. Zero until the menu
+    /// has been opened.
+    private(set) var memoryInUse: UInt64 = 0
     /// Updated on every check so "running for" times stay current.
     private(set) var now = Date()
 
     @ObservationIgnored private var timer: Timer?
     @ObservationIgnored private var loadingPreviews: Set<String> = []
 
+    /// The simulator that most recently stopped running, whoever stopped
+    /// it, and when Simmer noticed. Remembered between launches.
+    struct LastShutDown: Equatable {
+        let name: String
+        let date: Date
+    }
+    private(set) var lastShutDown: LastShutDown?
+
+    private static let lastNameKey = "lastShutDownName"
+    private static let lastDateKey = "lastShutDownDate"
+
     init() {
+        let defaults = UserDefaults.standard
+        if let name = defaults.string(forKey: Self.lastNameKey),
+           let date = defaults.object(forKey: Self.lastDateKey) as? Date {
+            lastShutDown = LastShutDown(name: name, date: date)
+        }
         refresh()
         // Checking is a quick look at the process list, so doing it every
         // few seconds costs next to nothing. The tolerance lets macOS
@@ -29,16 +48,37 @@ final class SimulatorMonitor {
         self.timer = timer
     }
 
+    /// Left on for two hours or more, which usually means forgotten.
+    func isForgotten(_ simulator: Simulator) -> Bool {
+        now.timeIntervalSince(simulator.bootedAt) >= 2 * 60 * 60
+    }
+
+    var hasForgotten: Bool { simulators.contains(where: isForgotten) }
+
     func refresh() {
         let known = Dictionary(simulators.map { ($0.pid, $0) }, uniquingKeysWith: { first, _ in first })
         let found = SimulatorScanner.scan(known: known)
         if found != simulators {
+            let stillRunning = Set(found.map(\.pid))
+            if let gone = simulators.last(where: { !stillRunning.contains($0.pid) }) {
+                let last = LastShutDown(name: gone.name, date: Date())
+                lastShutDown = last
+                UserDefaults.standard.set(last.name, forKey: Self.lastNameKey)
+                UserDefaults.standard.set(last.date, forKey: Self.lastDateKey)
+            }
             simulators = found
             let ids = Set(found.map(\.id))
             previews = previews.filter { ids.contains($0.key) }
             shuttingDown.formIntersection(ids)
         }
         now = Date()
+    }
+
+    /// Adds up the memory the running simulators hold. Called while the
+    /// menu is open, never in the background.
+    func loadMemory() {
+        let held = SimulatorScanner.memory(of: Set(simulators.map(\.pid)))
+        memoryInUse = held.values.reduce(0, +)
     }
 
     /// Fetches a fresh picture of every simulator's screen. Called while the
