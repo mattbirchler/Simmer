@@ -1,15 +1,46 @@
 import AppKit
 import SwiftUI
 
-/// The gem from Simmer's app icon, as an outline with its facet lines.
-/// Shown unlit in the menu when nothing is running.
+/// The corners of the gem from Simmer's app icon, fitted to a rectangle.
+private struct GemCorners {
+    let top, bottom, left, right, front: CGPoint
+
+    init(in rect: CGRect) {
+        top = CGPoint(x: rect.midX, y: rect.minY)
+        bottom = CGPoint(x: rect.midX, y: rect.maxY)
+        left = CGPoint(x: rect.minX, y: rect.minY + rect.height * 0.467)
+        right = CGPoint(x: rect.maxX, y: left.y)
+        front = CGPoint(x: rect.midX, y: rect.minY + rect.height * 0.533)
+    }
+}
+
+/// The gem lit up, in the four greens of the app icon.
+struct GemFacets: View {
+    var body: some View {
+        Canvas { context, size in
+            let gem = GemCorners(in: CGRect(origin: .zero, size: size))
+            let facets: [([CGPoint], Color)] = [
+                ([gem.top, gem.left, gem.front], Color(red: 0.71, green: 0.97, blue: 0.56)),
+                ([gem.top, gem.front, gem.right], Color(red: 0.37, green: 0.85, blue: 0.29)),
+                ([gem.left, gem.bottom, gem.front], Color(red: 0.20, green: 0.71, blue: 0.25)),
+                ([gem.front, gem.bottom, gem.right], Color(red: 0.10, green: 0.53, blue: 0.20)),
+            ]
+            for (points, color) in facets {
+                var path = Path()
+                path.addLines(points)
+                path.closeSubpath()
+                context.fill(path, with: .color(color))
+            }
+        }
+    }
+}
+
+/// The gem as an outline with its facet lines. Shown unlit in the menu
+/// when nothing is running.
 struct GemOutline: Shape {
     func path(in rect: CGRect) -> Path {
-        let top = CGPoint(x: rect.midX, y: rect.minY)
-        let bottom = CGPoint(x: rect.midX, y: rect.maxY)
-        let left = CGPoint(x: rect.minX, y: rect.minY + rect.height * 0.467)
-        let right = CGPoint(x: rect.maxX, y: left.y)
-        let front = CGPoint(x: rect.midX, y: rect.minY + rect.height * 0.533)
+        let gem = GemCorners(in: rect)
+        let (top, bottom, left, right, front) = (gem.top, gem.bottom, gem.left, gem.right, gem.front)
 
         var path = Path()
         path.addLines([top, left, bottom, right])

@@ -18,6 +18,10 @@ final class SimulatorMonitor {
     /// Updated on every check so "running for" times stay current.
     private(set) var now = Date()
 
+    /// Whether to post a notification when a simulator looks forgotten.
+    private(set) var notifiesWhenForgotten = false
+
+    @ObservationIgnored private let notifier = ForgottenNotifier()
     @ObservationIgnored private var timer: Timer?
     @ObservationIgnored private var loadingPreviews: Set<String> = []
 
@@ -37,6 +41,11 @@ final class SimulatorMonitor {
         if let name = defaults.string(forKey: Self.lastNameKey),
            let date = defaults.object(forKey: Self.lastDateKey) as? Date {
             lastShutDown = LastShutDown(name: name, date: date)
+        }
+        notifiesWhenForgotten = notifier.isEnabled
+        notifier.onShutDown = { [weak self] id in
+            guard let self, let simulator = simulators.first(where: { $0.id == id }) else { return }
+            shutDown(simulator)
         }
         refresh()
         // Checking is a quick look at the process list, so doing it every
@@ -79,6 +88,16 @@ final class SimulatorMonitor {
         return level >= 4 ? .critical : level >= 2 ? .warning : .normal
     }
 
+    /// Turning this on asks macOS for permission the first time, and it
+    /// stays off if that's refused.
+    func setNotifiesWhenForgotten(_ enabled: Bool) {
+        notifiesWhenForgotten = enabled
+        Task {
+            notifiesWhenForgotten = await notifier.setEnabled(enabled)
+            refresh()
+        }
+    }
+
     func refresh() {
         let known = Dictionary(simulators.map { ($0.pid, $0) }, uniquingKeysWith: { first, _ in first })
         let found = SimulatorScanner.scan(known: known)
@@ -104,6 +123,12 @@ final class SimulatorMonitor {
         // One cheap system call, and only worth asking while something runs.
         let pressure = simulators.isEmpty ? MemoryPressure.normal : Self.readMemoryPressure()
         if pressure != memoryPressure { memoryPressure = pressure }
+
+        #if DEBUG
+        // Pictures taken for the README shouldn't set off notifications.
+        if Snapshot.destination != nil { return }
+        #endif
+        notifier.update(simulators: simulators) { mood(of: $0) >= .forgotten }
     }
 
     /// Adds up the memory the running simulators hold. Called while the

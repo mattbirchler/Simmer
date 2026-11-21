@@ -5,11 +5,14 @@ import SwiftUI
 struct MenuView: View {
     @Environment(SimulatorMonitor.self) private var monitor
     @State private var opensAtLogin = SMAppService.mainApp.status == .enabled
+    /// Whether simulators have been listed since the menu was opened. When
+    /// the last one goes, the gem is shown dimming rather than already dim.
+    @State private var sawSimulators = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             if monitor.simulators.isEmpty {
-                emptyState
+                EmptyState(detail: emptyDetail, justEmptied: sawSimulators)
             } else {
                 header
                 Divider()
@@ -27,8 +30,13 @@ struct MenuView: View {
         .frame(width: 350)
         // Rows slide away as their simulators stop, instead of vanishing.
         .animation(.snappy(duration: 0.3), value: monitor.simulators)
+        .onChange(of: monitor.simulators.isEmpty) { _, isEmpty in
+            if !isEmpty { sawSimulators = true }
+        }
         .task {
             // Runs only while the menu is open.
+            monitor.refresh()
+            sawSimulators = !monitor.simulators.isEmpty
             while !Task.isCancelled {
                 monitor.refresh()
                 monitor.loadMemory()
@@ -68,27 +76,6 @@ struct MenuView: View {
         return String(format: "%.1f GB", megabytes / 1024)
     }
 
-    /// The gem, unlit, laid out like one of the simulator rows.
-    private var emptyState: some View {
-        HStack(spacing: 12) {
-            GemOutline()
-                .stroke(.tertiary, style: StrokeStyle(lineWidth: 1.5, lineJoin: .round))
-                .frame(width: 22, height: 36)
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Nothing running")
-                    .font(.body.weight(.medium))
-                Text(emptyDetail)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            Spacer(minLength: 0)
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 16)
-    }
-
     private var emptyDetail: String {
         guard let last = monitor.lastShutDown else { return "Simulators you start will show up here." }
         return "Last shut down: \(last.name), \(Self.timeAgo(from: last.date, to: monitor.now))"
@@ -115,6 +102,11 @@ struct MenuView: View {
                     get: { opensAtLogin },
                     set: { setOpensAtLogin($0) }
                 ))
+                Toggle("Notify About Forgotten Simulators", isOn: Binding(
+                    get: { monitor.notifiesWhenForgotten },
+                    set: { monitor.setNotifiesWhenForgotten($0) }
+                ))
+                Divider()
                 Button("About Simmer") {
                     NSApplication.shared.activate(ignoringOtherApps: true)
                     NSApplication.shared.orderFrontStandardAboutPanel(nil)
@@ -153,6 +145,62 @@ struct MenuView: View {
             NSLog("Simmer couldn't change the login item: \(error.localizedDescription)")
         }
         opensAtLogin = SMAppService.mainApp.status == .enabled
+    }
+}
+
+/// The gem, unlit, laid out like one of the simulator rows.
+private struct EmptyState: View {
+    let detail: String
+    /// The last simulator has only just shut down, so the gem starts lit
+    /// and dims while the words settle in.
+    let justEmptied: Bool
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var isLit: Bool
+    @State private var isSettled: Bool
+
+    init(detail: String, justEmptied: Bool) {
+        self.detail = detail
+        self.justEmptied = justEmptied
+        _isLit = State(initialValue: justEmptied)
+        _isSettled = State(initialValue: !justEmptied)
+    }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            ZStack {
+                GemOutline()
+                    .stroke(.tertiary, style: StrokeStyle(lineWidth: 1.5, lineJoin: .round))
+                GemFacets()
+                    .opacity(isLit ? 1 : 0)
+                    .shadow(color: .green.opacity(isLit ? 0.55 : 0), radius: 6)
+            }
+            .frame(width: 22, height: 36)
+            .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Nothing running")
+                    .font(.body.weight(.medium))
+                Text(detail)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .opacity(isSettled ? 1 : 0)
+            .offset(y: isSettled ? 0 : 4)
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 16)
+        .onAppear {
+            guard isLit else { return }
+            if reduceMotion {
+                isLit = false
+                isSettled = true
+            } else {
+                withAnimation(.easeOut(duration: 0.35).delay(0.15)) { isSettled = true }
+                withAnimation(.easeInOut(duration: 0.9).delay(0.4)) { isLit = false }
+            }
+        }
     }
 }
 
