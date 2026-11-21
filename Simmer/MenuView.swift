@@ -16,6 +16,7 @@ struct MenuView: View {
                 VStack(spacing: 0) {
                     ForEach(monitor.simulators) { simulator in
                         SimulatorRow(simulator: simulator)
+                            .transition(.move(edge: .trailing).combined(with: .opacity))
                     }
                 }
                 .padding(.vertical, 4)
@@ -24,6 +25,8 @@ struct MenuView: View {
             footer
         }
         .frame(width: 350)
+        // Rows slide away as their simulators stop, instead of vanishing.
+        .animation(.snappy(duration: 0.3), value: monitor.simulators)
         .task {
             // Runs only while the menu is open.
             while !Task.isCancelled {
@@ -126,24 +129,33 @@ private struct SimulatorRow: View {
     var body: some View {
         HStack(spacing: 12) {
             preview
-            VStack(alignment: .leading, spacing: 2) {
+                .opacity(isShuttingDown ? 0.5 : 1)
+            VStack(alignment: .leading, spacing: 3) {
                 Text(simulator.name)
                     .font(.body.weight(.medium))
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
-                if !subtitle.isEmpty {
-                    Text(subtitle)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
+                if !simulator.runtime.isEmpty || simulator.origin != nil {
+                    HStack(spacing: 5) {
+                        if !simulator.runtime.isEmpty {
+                            Text(simulator.runtime)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                        }
+                        if let origin = simulator.origin {
+                            originChip(origin)
+                        }
+                    }
                 }
-                Text(Self.runningTime(from: simulator.bootedAt, to: monitor.now))
-                    .font(.caption)
-                    .foregroundStyle(isLongRunning ? AnyShapeStyle(.orange) : AnyShapeStyle(.secondary))
+                timePill
             }
+            .opacity(isShuttingDown ? 0.5 : 1)
             Spacer(minLength: 4)
             if isShuttingDown {
-                ProgressView().controlSize(.small)
+                Text("Shutting down…")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             } else {
                 Button("Shut Down") { monitor.shutDown(simulator) }
                     .controlSize(.small)
@@ -151,11 +163,33 @@ private struct SimulatorRow: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 6)
-        .opacity(isShuttingDown ? 0.5 : 1)
+        .animation(.default, value: isShuttingDown)
     }
 
-    private var subtitle: String {
-        [simulator.runtime, simulator.origin ?? ""].filter { !$0.isEmpty }.joined(separator: " · ")
+    /// Marks the simulators Xcode started on its own, the easiest to forget.
+    private func originChip(_ origin: String) -> some View {
+        Text(origin)
+            .font(.system(size: 10))
+            .foregroundStyle(.secondary)
+            .lineLimit(1)
+            .fixedSize()
+            .padding(.horizontal, 5)
+            .padding(.vertical, 1)
+            .overlay(RoundedRectangle(cornerRadius: 4, style: .continuous).strokeBorder(.tertiary, lineWidth: 1))
+    }
+
+    /// How long it has been running. Filled orange once it looks forgotten,
+    /// so the warning doesn't rest on the text color alone.
+    private var timePill: some View {
+        let time = Self.runningTime(from: simulator.bootedAt, to: monitor.now)
+        return Text(time)
+            .font(.caption.weight(isLongRunning ? .semibold : .regular))
+            .foregroundStyle(isLongRunning ? AnyShapeStyle(.orange) : AnyShapeStyle(.secondary))
+            .padding(.horizontal, 7)
+            .padding(.vertical, 1)
+            .background(Capsule().fill(isLongRunning ? Color.orange.opacity(0.18) : Color.primary.opacity(0.07)))
+            .accessibilityLabel(time == "Just started" ? time
+                                : isLongRunning ? "Running for \(time), probably forgotten" : "Running for \(time)")
     }
 
     private var isLongRunning: Bool { monitor.isForgotten(simulator) }
@@ -183,9 +217,9 @@ private struct SimulatorRow: View {
     static func runningTime(from start: Date, to end: Date) -> String {
         let minutes = max(0, Int(end.timeIntervalSince(start)) / 60)
         if minutes < 1 { return "Just started" }
-        if minutes < 60 { return "Running for \(minutes)m" }
+        if minutes < 60 { return "\(minutes)m" }
         let hours = minutes / 60
-        if hours < 24 { return "Running for \(hours)h \(minutes % 60)m" }
-        return "Running for \(hours / 24)d \(hours % 24)h"
+        if hours < 24 { return "\(hours)h \(minutes % 60)m" }
+        return "\(hours / 24)d \(hours % 24)h"
     }
 }
