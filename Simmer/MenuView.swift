@@ -23,7 +23,7 @@ struct MenuView: View {
             Divider()
             footer
         }
-        .frame(width: 330)
+        .frame(width: 350)
         .task {
             // Runs only while the menu is open.
             while !Task.isCancelled {
@@ -112,14 +112,15 @@ private struct SimulatorRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(simulator.name)
                     .font(.body.weight(.medium))
-                    .lineLimit(1)
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
                 if !subtitle.isEmpty {
                     Text(subtitle)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
-                Text("Running for \(Self.duration(from: simulator.bootedAt, to: monitor.now))")
+                Text(Self.runningTime(from: simulator.bootedAt, to: monitor.now))
                     .font(.caption)
                     .foregroundStyle(isLongRunning ? AnyShapeStyle(.orange) : AnyShapeStyle(.secondary))
             }
@@ -165,12 +166,12 @@ private struct SimulatorRow: View {
         .accessibilityHidden(true)
     }
 
-    static func duration(from start: Date, to end: Date) -> String {
+    static func runningTime(from start: Date, to end: Date) -> String {
         let minutes = max(0, Int(end.timeIntervalSince(start)) / 60)
-        if minutes < 1 { return "under a minute" }
-        if minutes < 60 { return "\(minutes)m" }
+        if minutes < 1 { return "Just started" }
+        if minutes < 60 { return "Running for \(minutes)m" }
         let hours = minutes / 60
-        if hours < 24 { return "\(hours)h \(minutes % 60)m" }
-        return "\(hours / 24)d \(hours % 24)h"
+        if hours < 24 { return "Running for \(hours)h \(minutes % 60)m" }
+        return "Running for \(hours / 24)d \(hours % 24)h"
     }
 }

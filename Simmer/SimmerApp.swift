@@ -12,12 +12,25 @@ struct SimmerApp: App {
             // A phone, with the number of running simulators beside it
             // whenever there are any.
             let count = monitor.simulators.count
-            if count > 0 {
-                Image(systemName: "iphone")
-                Text("\(count)")
-            } else {
-                Image(systemName: "iphone")
+            Group {
+                if count > 0 {
+                    Image(systemName: "iphone")
+                    Text("\(count)")
+                } else {
+                    Image(systemName: "iphone")
+                }
             }
+            #if DEBUG
+            .task {
+                if let file = Snapshot.destination {
+                    await Snapshot.save(monitor, to: file)
+                    NSApplication.shared.terminate(nil)
+                } else if Snapshot.shutsDownAll {
+                    await Snapshot.shutDownAll(monitor)
+                    NSApplication.shared.terminate(nil)
+                }
+            }
+            #endif
         }
         .menuBarExtraStyle(.window)
     }

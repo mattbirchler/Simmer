@@ -14,6 +14,7 @@
 		9356898C3922B0D77F27131E /* SimulatorMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50FE6B979F72B2412D47C92 /* SimulatorMonitor.swift */; };
 		935E422A0D02007DC4F686C9 /* Simulator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DD7B778476B32BABCC9C353 /* Simulator.swift */; };
 		A91A4EE4DABBD9B19DF9DD38 /* SimulatorScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2718C679A5E06DCE9B6E09F4 /* SimulatorScanner.swift */; };
+		D740E29ACBE50CFFE94F298E /* Snapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E73F6EF8B29AD3E61F2E3E5 /* Snapshot.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +23,7 @@
 		701A018823899CD83A9C5CC9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		891F41F5E2476F97B9ED89A4 /* SimulatorControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatorControl.swift; sourceTree = "<group>"; };
 		8B5B492EBABDC1710073E479 /* Simmer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Simmer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8E73F6EF8B29AD3E61F2E3E5 /* Snapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Snapshot.swift; sourceTree = "<group>"; };
 		AA86F2C44BBF374D4F04CF7A /* MenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuView.swift; sourceTree = "<group>"; };
 		BFBB9E0D8B7A6B02B5B8F52D /* SimmerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimmerApp.swift; sourceTree = "<group>"; };
 		F50FE6B979F72B2412D47C92 /* SimulatorMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatorMonitor.swift; sourceTree = "<group>"; };
@@ -46,6 +48,7 @@
 				891F41F5E2476F97B9ED89A4 /* SimulatorControl.swift */,
 				F50FE6B979F72B2412D47C92 /* SimulatorMonitor.swift */,
 				2718C679A5E06DCE9B6E09F4 /* SimulatorScanner.swift */,
+				8E73F6EF8B29AD3E61F2E3E5 /* Snapshot.swift */,
 			);
 			path = Simmer;
 			sourceTree = "<group>";
@@ -135,6 +138,7 @@
 				0E4C1CE2C9E4293B0013392F /* SimulatorControl.swift in Sources */,
 				9356898C3922B0D77F27131E /* SimulatorMonitor.swift in Sources */,
 				A91A4EE4DABBD9B19DF9DD38 /* SimulatorScanner.swift in Sources */,
+				D740E29ACBE50CFFE94F298E /* Snapshot.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
