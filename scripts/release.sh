@@ -1,12 +1,13 @@
 #!/bin/zsh
 # Builds Simmer, signs it with a Developer ID certificate, has Apple
-# notarize it, and zips it, so it opens on any Mac without a warning.
-# Prints the zip's path as the last line.
+# notarize it, and packs it into a disk image, so it opens on any Mac
+# without a warning. Prints the disk image's path as the last line.
 #
 # Needs a .env file (gitignored) with an App Store Connect API key:
 #   ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_PATH (full path to the .p8)
 # and a "Developer ID Application" certificate in your keychain. Set
-# SIGNING_IDENTITY in .env if you have more than one.
+# SIGNING_IDENTITY in .env if you have more than one. Also needs create-dmg
+# (brew install create-dmg) for the disk image.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -32,24 +33,39 @@ echo "Signing with Developer ID" >&2
 codesign --force --options runtime --timestamp --sign "$IDENTITY" "$APP"
 codesign --verify --deep --strict "$APP"
 
-echo "Sending to Apple for notarization (a few minutes)" >&2
-ditto -c -k --keepParent "$APP" "$OUT/upload.zip"
-RESULT=$(xcrun notarytool submit "$OUT/upload.zip" --key "$KEY" --key-id "$ASC_KEY_ID" --issuer "$ASC_ISSUER_ID" --wait)
-rm "$OUT/upload.zip"
-if ! grep -q "status: Accepted" <<< "$RESULT"; then
-    echo "$RESULT" >&2
-    ID=$(grep -m1 "id:" <<< "$RESULT" | awk '{print $2}')
-    [[ -n "$ID" ]] && xcrun notarytool log "$ID" --key "$KEY" --key-id "$ASC_KEY_ID" --issuer "$ASC_ISSUER_ID" >&2
-    exit 1
-fi
+# Sends a file to Apple and waits for the verdict, printing Apple's log
+# and stopping if it's turned down.
+notarize() {
+    local result id
+    result=$(xcrun notarytool submit "$1" --key "$KEY" --key-id "$ASC_KEY_ID" --issuer "$ASC_ISSUER_ID" --wait)
+    if ! grep -q "status: Accepted" <<< "$result"; then
+        echo "$result" >&2
+        id=$(grep -m1 "id:" <<< "$result" | awk '{print $2}')
+        [[ -n "$id" ]] && xcrun notarytool log "$id" --key "$KEY" --key-id "$ASC_KEY_ID" --issuer "$ASC_ISSUER_ID" >&2
+        exit 1
+    fi
+}
 
+echo "Sending the app to Apple for notarization (a few minutes)" >&2
+ditto -c -k --keepParent "$APP" "$OUT/upload.zip"
+notarize "$OUT/upload.zip"
+rm "$OUT/upload.zip"
 xcrun stapler staple -q "$APP"
 spctl --assess --type execute "$APP"
 
 # Always the same file name, so the README's download link keeps working.
-ZIP="$OUT/Simmer.zip"
-ditto -c -k --keepParent "$APP" "$ZIP"
+DMG="$OUT/Simmer.dmg"
+echo "Making the disk image" >&2
+scripts/make-dmg.sh "$APP" "$DMG" > /dev/null
+codesign --force --timestamp --sign "$IDENTITY" "$DMG"
+
+# The disk image is notarized as well, so it opens without a warning even
+# on a Mac that's offline.
+echo "Sending the disk image to Apple for notarization (a few more minutes)" >&2
+notarize "$DMG"
+xcrun stapler staple -q "$DMG"
+spctl --assess --type open --context context:primary-signature "$DMG"
 
 VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" "$APP/Contents/Info.plist")
 echo "Notarized Simmer $VERSION" >&2
-echo "$ZIP"
+echo "$DMG"
