@@ -1,4 +1,6 @@
 // Draws Simmer's app icon and writes every size the asset catalog needs.
+// Those flat pictures are what macOS 15 and earlier show, and what the
+// README and the disk image use.
 // Run from the project folder: swift scripts/make-icon.swift
 import AppKit
 
@@ -75,6 +77,25 @@ for size in [16, 32, 128, 256, 512] {
         images.append(["idiom": "mac", "size": "\(size)x\(size)", "scale": "\(scale)x", "filename": name])
     }
 }
+// The glow behind the gem in the layered icon, Simmer/AppIcon.icon, which
+// macOS 26 and later draw with their glass effects. Its other layer,
+// gem.svg, and its icon.json are edited by hand or in Icon Composer.
+func drawGlow() -> Data {
+    let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: 1024, pixelsHigh: 1024,
+                               bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+                               colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0)!
+    NSGraphicsContext.saveGraphicsState()
+    NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
+    let context = NSGraphicsContext.current!.cgContext
+    let colors = [color(0x7DFF6A, alpha: 0.5), color(0x7DFF6A, alpha: 0)] as CFArray
+    let glow = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: colors, locations: [0, 1])!
+    let middle = CGPoint(x: 512, y: 512)
+    context.drawRadialGradient(glow, startCenter: middle, startRadius: 0, endCenter: middle, endRadius: 470, options: [])
+    NSGraphicsContext.restoreGraphicsState()
+    return rep.representation(using: .png, properties: [:])!
+}
+try drawGlow().write(to: URL(fileURLWithPath: "Simmer/AppIcon.icon/Assets/glow.png"))
+
 let contents: [String: Any] = ["images": images, "info": ["author": "xcode", "version": 1]]
 try JSONSerialization.data(withJSONObject: contents, options: [.prettyPrinted, .sortedKeys])
     .write(to: folder.appendingPathComponent("Contents.json"))
