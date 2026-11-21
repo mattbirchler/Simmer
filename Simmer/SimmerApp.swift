@@ -9,15 +9,15 @@ struct SimmerApp: App {
             MenuView()
                 .environment(monitor)
         } label: {
-            // A phone, with the number of running simulators beside it
-            // whenever there are any.
+            // A gem: hollow when nothing is running, solid with a count
+            // when something is, and orange once one looks forgotten.
             let count = monitor.simulators.count
             Group {
                 if count > 0 {
-                    Image(systemName: "iphone")
+                    Image(nsImage: monitor.hasForgotten ? MenuBarGem.forgotten : MenuBarGem.solid)
                     Text("\(count)")
                 } else {
-                    Image(systemName: "iphone")
+                    Image(nsImage: MenuBarGem.hollow)
                 }
             }
             #if DEBUG

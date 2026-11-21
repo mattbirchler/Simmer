@@ -29,6 +29,13 @@ final class SimulatorMonitor {
         self.timer = timer
     }
 
+    /// Left on for two hours or more, which usually means forgotten.
+    func isForgotten(_ simulator: Simulator) -> Bool {
+        now.timeIntervalSince(simulator.bootedAt) >= 2 * 60 * 60
+    }
+
+    var hasForgotten: Bool { simulators.contains(where: isForgotten) }
+
     func refresh() {
         let known = Dictionary(simulators.map { ($0.pid, $0) }, uniquingKeysWith: { first, _ in first })
         let found = SimulatorScanner.scan(known: known)

@@ -141,10 +141,7 @@ private struct SimulatorRow: View {
         [simulator.runtime, simulator.origin ?? ""].filter { !$0.isEmpty }.joined(separator: " · ")
     }
 
-    /// Left on for two hours or more, which usually means forgotten.
-    private var isLongRunning: Bool {
-        monitor.now.timeIntervalSince(simulator.bootedAt) >= 2 * 60 * 60
-    }
+    private var isLongRunning: Bool { monitor.isForgotten(simulator) }
 
     @ViewBuilder
     private var preview: some View {
