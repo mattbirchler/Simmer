@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0E4C1CE2C9E4293B0013392F /* SimulatorControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 891F41F5E2476F97B9ED89A4 /* SimulatorControl.swift */; };
+		15DE5FC3B2D965F96E1B02FD /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 3F56E466D5FAD8A8593974DA /* AppIcon.icon */; };
 		2662D37F464355839B16E2A3 /* DeviceFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0309928AF77742142AFB27 /* DeviceFrame.swift */; };
 		2D1B5382A82EC54574D763D2 /* Mood.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BDF5A579FD853BB96A9FCEF /* Mood.swift */; };
 		4CFA55677F127BF74C308436 /* SimmerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFBB9E0D8B7A6B02B5B8F52D /* SimmerApp.swift */; };
@@ -26,6 +27,7 @@
 		2718C679A5E06DCE9B6E09F4 /* SimulatorScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatorScanner.swift; sourceTree = "<group>"; };
 		363B559D9C5EB137BF198B48 /* Gem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Gem.swift; sourceTree = "<group>"; };
 		3DD7B778476B32BABCC9C353 /* Simulator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Simulator.swift; sourceTree = "<group>"; };
+		3F56E466D5FAD8A8593974DA /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		5B0309928AF77742142AFB27 /* DeviceFrame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceFrame.swift; sourceTree = "<group>"; };
 		701A018823899CD83A9C5CC9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		891F41F5E2476F97B9ED89A4 /* SimulatorControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatorControl.swift; sourceTree = "<group>"; };
@@ -49,6 +51,7 @@
 		88BDE88A18833194941BA096 /* Simmer */ = {
 			isa = PBXGroup;
 			children = (
+				3F56E466D5FAD8A8593974DA /* AppIcon.icon */,
 				701A018823899CD83A9C5CC9 /* Assets.xcassets */,
 				5B0309928AF77742142AFB27 /* DeviceFrame.swift */,
 				188DFA467C99F4402E894D69 /* ForgottenNotifier.swift */,
@@ -133,6 +136,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				15DE5FC3B2D965F96E1B02FD /* AppIcon.icon in Resources */,
 				7C8C3F0CE0122BA283E9FE32 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
