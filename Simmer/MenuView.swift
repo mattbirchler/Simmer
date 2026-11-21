@@ -8,11 +8,11 @@ struct MenuView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            header
-            Divider()
             if monitor.simulators.isEmpty {
                 emptyState
             } else {
+                header
+                Divider()
                 VStack(spacing: 0) {
                     ForEach(monitor.simulators) { simulator in
                         SimulatorRow(simulator: simulator)
@@ -48,26 +48,43 @@ struct MenuView: View {
     }
 
     private var title: String {
-        switch monitor.simulators.count {
-        case 0: "Simulators"
-        case 1: "1 simulator running"
-        default: "\(monitor.simulators.count) simulators running"
-        }
+        monitor.simulators.count == 1 ? "1 simulator running" : "\(monitor.simulators.count) simulators running"
     }
 
+    /// The gem, unlit, laid out like one of the simulator rows.
     private var emptyState: some View {
-        VStack(spacing: 6) {
-            Image(systemName: "checkmark.circle")
-                .font(.system(size: 28, weight: .light))
-                .foregroundStyle(.green)
-            Text("No simulators running")
-                .font(.callout)
-            Text("Nothing is using your battery in the background.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+        HStack(spacing: 12) {
+            GemOutline()
+                .stroke(.tertiary, style: StrokeStyle(lineWidth: 1.5, lineJoin: .round))
+                .frame(width: 22, height: 36)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Nothing running")
+                    .font(.body.weight(.medium))
+                Text(emptyDetail)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 22)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 16)
+    }
+
+    private var emptyDetail: String {
+        guard let last = monitor.lastShutDown else { return "Simulators you start will show up here." }
+        return "Last shut down: \(last.name), \(Self.timeAgo(from: last.date, to: monitor.now))"
+    }
+
+    static func timeAgo(from start: Date, to end: Date) -> String {
+        let minutes = max(0, Int(end.timeIntervalSince(start)) / 60)
+        if minutes < 1 { return "just now" }
+        if minutes < 60 { return minutes == 1 ? "1 minute ago" : "\(minutes) minutes ago" }
+        let hours = minutes / 60
+        if hours < 24 { return hours == 1 ? "1 hour ago" : "\(hours) hours ago" }
+        let days = hours / 24
+        return days == 1 ? "yesterday" : "\(days) days ago"
     }
 
     private var footer: some View {

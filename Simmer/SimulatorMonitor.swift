@@ -16,7 +16,23 @@ final class SimulatorMonitor {
     @ObservationIgnored private var timer: Timer?
     @ObservationIgnored private var loadingPreviews: Set<String> = []
 
+    /// The simulator that most recently stopped running, whoever stopped
+    /// it, and when Simmer noticed. Remembered between launches.
+    struct LastShutDown: Equatable {
+        let name: String
+        let date: Date
+    }
+    private(set) var lastShutDown: LastShutDown?
+
+    private static let lastNameKey = "lastShutDownName"
+    private static let lastDateKey = "lastShutDownDate"
+
     init() {
+        let defaults = UserDefaults.standard
+        if let name = defaults.string(forKey: Self.lastNameKey),
+           let date = defaults.object(forKey: Self.lastDateKey) as? Date {
+            lastShutDown = LastShutDown(name: name, date: date)
+        }
         refresh()
         // Checking is a quick look at the process list, so doing it every
         // few seconds costs next to nothing. The tolerance lets macOS
@@ -40,6 +56,13 @@ final class SimulatorMonitor {
         let known = Dictionary(simulators.map { ($0.pid, $0) }, uniquingKeysWith: { first, _ in first })
         let found = SimulatorScanner.scan(known: known)
         if found != simulators {
+            let stillRunning = Set(found.map(\.pid))
+            if let gone = simulators.last(where: { !stillRunning.contains($0.pid) }) {
+                let last = LastShutDown(name: gone.name, date: Date())
+                lastShutDown = last
+                UserDefaults.standard.set(last.name, forKey: Self.lastNameKey)
+                UserDefaults.standard.set(last.date, forKey: Self.lastDateKey)
+            }
             simulators = found
             let ids = Set(found.map(\.id))
             previews = previews.filter { ids.contains($0.key) }
