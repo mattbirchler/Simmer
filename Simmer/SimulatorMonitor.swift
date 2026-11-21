@@ -10,9 +10,11 @@ final class SimulatorMonitor {
     private(set) var previews: [String: NSImage] = [:]
     /// Simulators that have been told to shut down and haven't gone yet.
     private(set) var shuttingDown: Set<String> = []
-    /// Bytes of memory held by all running simulators. Zero until the menu
-    /// has been opened.
-    private(set) var memoryInUse: UInt64 = 0
+    /// Bytes of memory each simulator holds, by simulator ID. Empty until
+    /// the menu has been opened.
+    private(set) var memory: [String: UInt64] = [:]
+    /// Bytes of memory held by all running simulators together.
+    var memoryInUse: UInt64 { memory.values.reduce(0, +) }
     /// Updated on every check so "running for" times stay current.
     private(set) var now = Date()
 
@@ -91,6 +93,7 @@ final class SimulatorMonitor {
             simulators = found
             let ids = Set(found.map(\.id))
             previews = previews.filter { ids.contains($0.key) }
+            memory = memory.filter { ids.contains($0.key) }
             shuttingDown.formIntersection(ids)
         }
         var date = Date()
@@ -107,7 +110,9 @@ final class SimulatorMonitor {
     /// menu is open, never in the background.
     func loadMemory() {
         let held = SimulatorScanner.memory(of: Set(simulators.map(\.pid)))
-        memoryInUse = held.values.reduce(0, +)
+        memory = Dictionary(simulators.compactMap { simulator in
+            held[simulator.pid].map { (simulator.id, $0) }
+        }, uniquingKeysWith: +)
     }
 
     /// Fetches a fresh picture of every simulator's screen. Called while the

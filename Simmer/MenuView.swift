@@ -184,9 +184,16 @@ private struct SimulatorRow: View {
                         }
                     }
                 }
-                timePill
+                HStack(spacing: 5) {
+                    timePill
+                    if let bytes = monitor.memory[simulator.id], bytes > 0 {
+                        memoryPill(bytes)
+                    }
+                }
             }
             .opacity(isShuttingDown ? 0.5 : 1)
+            // Takes the room it needs before the spacer gets any.
+            .layoutPriority(1)
             Spacer(minLength: 4)
             if isShuttingDown {
                 Text("Shutting down…")
@@ -214,6 +221,19 @@ private struct SimulatorRow: View {
             .overlay(RoundedRectangle(cornerRadius: 4, style: .continuous).strokeBorder(.tertiary, lineWidth: 1))
     }
 
+    /// The memory held by everything running inside this simulator.
+    private func memoryPill(_ bytes: UInt64) -> some View {
+        Text(MenuView.memory(bytes))
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .lineLimit(1)
+            .fixedSize()
+            .padding(.horizontal, 7)
+            .padding(.vertical, 1)
+            .background(Capsule().fill(Color.primary.opacity(0.07)))
+            .accessibilityLabel("Using \(MenuView.memory(bytes)) of memory")
+    }
+
     /// How long it has been running. Plain while fresh, then filled with
     /// the mood's color, so the warning doesn't rest on text color alone.
     private var timePill: some View {
@@ -234,14 +254,9 @@ private struct SimulatorRow: View {
 
     @ViewBuilder
     private var preview: some View {
-        let shape = RoundedRectangle(cornerRadius: 7, style: .continuous)
         Group {
             if let image = monitor.previews[simulator.id] {
-                Image(nsImage: image)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .clipShape(shape)
-                    .overlay(shape.strokeBorder(.primary.opacity(0.2), lineWidth: 1))
+                DeviceFrame(screen: image, kind: simulator.kind)
             } else {
                 Image(systemName: simulator.kind.symbol)
                     .font(.system(size: 34, weight: .ultraLight))
