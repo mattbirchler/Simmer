@@ -1,0 +1,36 @@
+name: Simmer
+options:
+  bundleIdPrefix: me.birchtree
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: 1
+    SWIFT_VERSION: "6.0"
+
+targets:
+  Simmer:
+    type: application
+    platform: macOS
+    sources:
+      - path: Simmer
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: me.birchtree.Simmer
+        GENERATE_INFOPLIST_FILE: YES
+        # A menu bar app: no Dock icon and no main window.
+        INFOPLIST_KEY_LSUIElement: YES
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.developer-tools
+        INFOPLIST_KEY_NSHumanReadableCopyright: "MIT License"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ENABLE_HARDENED_RUNTIME: YES
+        # Simmer reads the process list and runs xcrun, so it can't be sandboxed.
+        ENABLE_APP_SANDBOX: NO
+        # Signs to run locally, so anyone can build without a developer account.
+        # scripts/release.sh re-signs with a Developer ID for distribution.
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "-"
+        DEVELOPMENT_TEAM: ""
