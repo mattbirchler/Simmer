@@ -22,11 +22,13 @@ Simmer needs macOS 14 or newer, and Xcode (which is where simulators come from).
 ## Use
 
 - **The gem** is hollow when nothing is running. When simulators are running it fills in, with a number beside it saying how many.
-- **Click the gem** to see each one, with a live picture of what's on its screen and how long it has been running. The top of the menu shows how much memory they are holding between them.
+- **The gem's color** tells you how things are going. Green means everything was started within the hour. It turns yellow after an hour, orange after two (which usually means one was forgotten), and red after a day.
+- **Click the gem** to see each one, with a live picture of what's on its screen, how long it has been running, and how much memory it is holding. The top of the menu shows the total.
 - **Click Shut Down** next to a simulator to turn it off, or **Shut Down All** to turn them all off at once.
 - **Click the gear** and choose **Open at Login** so Simmer starts by itself whenever you turn on your Mac.
+- **Choose Notify About Forgotten Simulators** from the gear to get a notification when one passes the two hour mark, with a Shut Down button on it. macOS asks for your permission the first time.
 
-An orange gem, and a running time shown in orange, mean a simulator has been on for more than two hours, which usually means it was forgotten.
+The gem also turns orange when your Mac is getting short of memory while simulators are running, and red when it is nearly out, however long they have been on.
 
 ## Questions
 
@@ -59,7 +61,9 @@ Then press Run in Xcode. No developer account is needed.
 
 How it works: every booted simulator has a `launchd_sim` process whose arguments point into the device's folder. Simmer finds those in the process list, reads the device's name and system version from its `device.plist`, and uses `xcrun simctl` to take screenshots and shut devices down. See [`SimulatorScanner.swift`](Simmer/SimulatorScanner.swift).
 
-The project file is generated from `project.yml` with [XcodeGen](https://github.com/yonaskolb/XcodeGen). If you add or remove files, run `xcodegen generate`. `scripts/release.sh` makes the signed, notarized disk image, and needs [create-dmg](https://github.com/create-dmg/create-dmg) (`brew install create-dmg`). The icon and the disk image's background are drawn by `scripts/make-icon.swift` and `scripts/make-dmg-background.swift`.
+The project file is generated from `project.yml` with [XcodeGen](https://github.com/yonaskolb/XcodeGen). If you add or remove files, run `xcodegen generate`. `scripts/release.sh` makes the signed, notarized disk image, and needs [create-dmg](https://github.com/create-dmg/create-dmg) (`brew install create-dmg`). The disk image's background is drawn by `scripts/make-dmg-background.swift`.
+
+The app icon comes in two forms. `Simmer/AppIcon.icon` is the layered one that macOS 26 and later draw with their glass, dark and tinted styles, and it opens in Icon Composer. `scripts/make-icon.swift` draws the flat pictures that earlier versions of macOS show.
 
 Issues and pull requests are welcome.
 
