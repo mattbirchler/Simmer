@@ -48,12 +48,34 @@ final class SimulatorMonitor {
         self.timer = timer
     }
 
-    /// Left on for two hours or more, which usually means forgotten.
-    func isForgotten(_ simulator: Simulator) -> Bool {
-        now.timeIntervalSince(simulator.bootedAt) >= 2 * 60 * 60
+    /// How long this simulator has been left on, as a mood.
+    func mood(of simulator: Simulator) -> Mood {
+        Mood(runningFor: now.timeIntervalSince(simulator.bootedAt))
     }
 
-    var hasForgotten: Bool { simulators.contains(where: isForgotten) }
+    /// The worst mood among the running simulators, pushed further when the
+    /// Mac is short of memory. Nil when nothing is running.
+    var mood: Mood? {
+        guard var worst = simulators.map(mood(of:)).max() else { return nil }
+        switch memoryPressure {
+        case .critical: worst = .neglected
+        case .warning: worst = max(worst, .forgotten)
+        case .normal: break
+        }
+        return worst
+    }
+
+    /// What macOS says about how tight memory is across the whole Mac.
+    enum MemoryPressure { case normal, warning, critical }
+    private(set) var memoryPressure = MemoryPressure.normal
+
+    private static func readMemoryPressure() -> MemoryPressure {
+        var level: Int32 = 0
+        var size = MemoryLayout<Int32>.size
+        guard sysctlbyname("kern.memorystatus_vm_pressure_level", &level, &size, nil, 0) == 0 else { return .normal }
+        // 1 is normal, 2 is a warning, 4 is critical.
+        return level >= 4 ? .critical : level >= 2 ? .warning : .normal
+    }
 
     func refresh() {
         let known = Dictionary(simulators.map { ($0.pid, $0) }, uniquingKeysWith: { first, _ in first })
@@ -71,7 +93,14 @@ final class SimulatorMonitor {
             previews = previews.filter { ids.contains($0.key) }
             shuttingDown.formIntersection(ids)
         }
-        now = Date()
+        var date = Date()
+        #if DEBUG
+        date += Snapshot.pretendHours * 3600
+        #endif
+        now = date
+        // One cheap system call, and only worth asking while something runs.
+        let pressure = simulators.isEmpty ? MemoryPressure.normal : Self.readMemoryPressure()
+        if pressure != memoryPressure { memoryPressure = pressure }
     }
 
     /// Adds up the memory the running simulators hold. Called while the

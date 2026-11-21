@@ -15,6 +15,52 @@ enum Snapshot {
         return URL(fileURLWithPath: arguments[flag + 1])
     }
 
+    /// Hours to add to the clock, from `--pretend-hours <n>`, to see how
+    /// long-running simulators look without waiting.
+    static let pretendHours: Double = {
+        let arguments = CommandLine.arguments
+        guard let flag = arguments.firstIndex(of: "--pretend-hours"), flag + 1 < arguments.count else { return 0 }
+        return Double(arguments[flag + 1]) ?? 0
+    }()
+
+    /// The file to write the menu bar gems to, from `--gems <file>`.
+    static var gemsDestination: URL? {
+        let arguments = CommandLine.arguments
+        guard let flag = arguments.firstIndex(of: "--gems"), flag + 1 < arguments.count else { return nil }
+        return URL(fileURLWithPath: arguments[flag + 1])
+    }
+
+    /// Every menu bar gem, enlarged, on a light and a dark strip.
+    static func saveGems(to file: URL) {
+        let moods: [Mood?] = [nil] + Mood.allCases.map { $0 }
+        let scale: CGFloat = 6
+        let cell = NSSize(width: 12 * scale + 24, height: 16 * scale + 24)
+        let image = NSImage(size: NSSize(width: cell.width * CGFloat(moods.count), height: cell.height * 2), flipped: false) { rect in
+            for (row, background) in [NSColor(white: 0.93, alpha: 1), NSColor(white: 0.16, alpha: 1)].enumerated() {
+                background.setFill()
+                NSRect(x: 0, y: cell.height * CGFloat(row), width: rect.width, height: cell.height).fill()
+                for (column, mood) in moods.enumerated() {
+                    let original = MenuBarGem.image(for: mood)
+                    var gem = original
+                    if original.isTemplate {
+                        // Stand in for what the menu bar does to templates.
+                        gem = NSImage(size: original.size, flipped: false) { area in
+                            original.draw(in: area)
+                            (row == 0 ? NSColor.black : NSColor.white).set()
+                            area.fill(using: .sourceAtop)
+                            return true
+                        }
+                    }
+                    gem.draw(in: NSRect(x: cell.width * CGFloat(column) + 12, y: cell.height * CGFloat(row) + 12,
+                                        width: 12 * scale, height: 16 * scale))
+                }
+            }
+            return true
+        }
+        guard let tiff = image.tiffRepresentation, let rep = NSBitmapImageRep(data: tiff) else { return }
+        try? rep.representation(using: .png, properties: [:])?.write(to: file)
+    }
+
     /// Whether the app was started with `--shut-down-all`, which shuts down
     /// every simulator the same way the menu's button does, then quits.
     static var shutsDownAll: Bool { CommandLine.arguments.contains("--shut-down-all") }

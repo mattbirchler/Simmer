@@ -21,34 +21,62 @@ struct GemOutline: Shape {
     }
 }
 
-/// The gem as it appears in the menu bar.
+/// The gem as it appears in the menu bar: an outline when nothing is
+/// running, and filled with the color of the current mood when something is.
 @MainActor
 enum MenuBarGem {
-    /// Nothing is running.
-    static let hollow = image(filled: false, tint: nil)
-    /// At least one simulator is running.
-    static let solid = image(filled: true, tint: nil)
-    /// A simulator has been left on long enough to look forgotten.
-    static let forgotten = image(filled: true, tint: .systemOrange)
+    private static let size = NSSize(width: 12, height: 16)
+    private static var colored: [Mood: NSImage] = [:]
 
-    private static func image(filled: Bool, tint: NSColor?) -> NSImage {
-        let image = NSImage(size: NSSize(width: 12, height: 16), flipped: false) { rect in
-            let box = rect.insetBy(dx: 1.2, dy: 1)
-            let path = NSBezierPath()
-            path.move(to: NSPoint(x: box.midX, y: box.maxY))
-            path.line(to: NSPoint(x: box.minX, y: box.minY + box.height * 0.533))
-            path.line(to: NSPoint(x: box.midX, y: box.minY))
-            path.line(to: NSPoint(x: box.maxX, y: box.minY + box.height * 0.533))
-            path.close()
-            path.lineJoinStyle = .round
+    static func image(for mood: Mood?) -> NSImage {
+        guard let mood else { return hollow }
+        if let image = colored[mood] { return image }
+        let image = filled(mood.nsColor)
+        colored[mood] = image
+        return image
+    }
+
+    private static func outline(in rect: NSRect) -> NSBezierPath {
+        let box = rect.insetBy(dx: 1.2, dy: 1)
+        let path = NSBezierPath()
+        path.move(to: NSPoint(x: box.midX, y: box.maxY))
+        path.line(to: NSPoint(x: box.minX, y: box.minY + box.height * 0.533))
+        path.line(to: NSPoint(x: box.midX, y: box.minY))
+        path.line(to: NSPoint(x: box.maxX, y: box.minY + box.height * 0.533))
+        path.close()
+        path.lineJoinStyle = .round
+        return path
+    }
+
+    /// Colored by macOS to suit the menu bar.
+    private static let hollow: NSImage = {
+        let image = NSImage(size: size, flipped: false) { rect in
+            let path = outline(in: rect)
             path.lineWidth = 1.3
-            (tint ?? .black).set()
-            if filled { path.fill() }
+            NSColor.black.setStroke()
             path.stroke()
             return true
         }
-        // Without a tint, macOS colors it to suit the menu bar.
-        image.isTemplate = tint == nil
+        image.isTemplate = true
         return image
+    }()
+
+    /// Two tones, lighter on the left, so it reads as a cut gem and holds
+    /// its shape on a pale menu bar.
+    private static func filled(_ color: NSColor) -> NSImage {
+        NSImage(size: size, flipped: false) { rect in
+            let path = outline(in: rect)
+            color.setFill()
+            path.fill()
+            NSGraphicsContext.saveGraphicsState()
+            path.addClip()
+            NSColor.black.withAlphaComponent(0.2).setFill()
+            NSRect(x: rect.midX, y: rect.minY, width: rect.width / 2, height: rect.height).fill()
+            NSGraphicsContext.restoreGraphicsState()
+            path.lineWidth = 0.8
+            (color.blended(withFraction: 0.3, of: .black) ?? color).setStroke()
+            path.stroke()
+            return true
+        }
     }
 }

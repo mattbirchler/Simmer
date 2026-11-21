@@ -214,21 +214,23 @@ private struct SimulatorRow: View {
             .overlay(RoundedRectangle(cornerRadius: 4, style: .continuous).strokeBorder(.tertiary, lineWidth: 1))
     }
 
-    /// How long it has been running. Filled orange once it looks forgotten,
-    /// so the warning doesn't rest on the text color alone.
+    /// How long it has been running. Plain while fresh, then filled with
+    /// the mood's color, so the warning doesn't rest on text color alone.
     private var timePill: some View {
         let time = Self.runningTime(from: simulator.bootedAt, to: monitor.now)
+        let mood = monitor.mood(of: simulator)
         return Text(time)
-            .font(.caption.weight(isLongRunning ? .semibold : .regular))
-            .foregroundStyle(isLongRunning ? AnyShapeStyle(.orange) : AnyShapeStyle(.secondary))
+            .font(.caption.weight(mood == .fresh ? .regular : .semibold))
+            // Yellow text is unreadable on a light menu, so that step
+            // keeps the regular text color over a yellow fill.
+            .foregroundStyle(mood == .fresh ? AnyShapeStyle(.secondary)
+                             : mood == .lingering ? AnyShapeStyle(.primary) : AnyShapeStyle(mood.color))
             .padding(.horizontal, 7)
             .padding(.vertical, 1)
-            .background(Capsule().fill(isLongRunning ? Color.orange.opacity(0.18) : Color.primary.opacity(0.07)))
-            .accessibilityLabel(time == "Just started" ? time
-                                : isLongRunning ? "Running for \(time), probably forgotten" : "Running for \(time)")
+            .background(Capsule().fill(mood == .fresh ? Color.primary.opacity(0.07)
+                                       : mood.color.opacity(mood == .lingering ? 0.35 : 0.18)))
+            .accessibilityLabel(time == "Just started" ? time : "Running for \(time), \(mood.spoken)")
     }
-
-    private var isLongRunning: Bool { monitor.isForgotten(simulator) }
 
     @ViewBuilder
     private var preview: some View {

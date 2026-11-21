@@ -9,20 +9,23 @@ struct SimmerApp: App {
             MenuView()
                 .environment(monitor)
         } label: {
-            // A gem: hollow when nothing is running, solid with a count
-            // when something is, and orange once one looks forgotten.
+            // A gem: hollow when nothing is running, and filled with a
+            // count when something is, green through red as things worsen.
             let count = monitor.simulators.count
             Group {
                 if count > 0 {
-                    Image(nsImage: monitor.hasForgotten ? MenuBarGem.forgotten : MenuBarGem.solid)
+                    Image(nsImage: MenuBarGem.image(for: monitor.mood))
                     Text("\(count)")
                 } else {
-                    Image(nsImage: MenuBarGem.hollow)
+                    Image(nsImage: MenuBarGem.image(for: nil))
                 }
             }
             #if DEBUG
             .task {
-                if let file = Snapshot.destination {
+                if let file = Snapshot.gemsDestination {
+                    Snapshot.saveGems(to: file)
+                    NSApplication.shared.terminate(nil)
+                } else if let file = Snapshot.destination {
                     await Snapshot.save(monitor, to: file)
                     NSApplication.shared.terminate(nil)
                 } else if Snapshot.shutsDownAll {
