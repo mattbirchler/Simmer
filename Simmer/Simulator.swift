@@ -59,12 +59,15 @@ struct Simulator: Identifiable, Equatable, Sendable {
     }
 
     /// "com.apple.CoreSimulator.SimRuntime.iOS-27-2" becomes "iOS 27.2".
+    /// Some runtimes are built for one device and say so after the version,
+    /// as in "iOS-27-2-iPhone19-4". That part is left off.
     static func runtimeName(from identifier: String) -> String {
         guard let last = identifier.split(separator: ".").last else { return "" }
         var parts = last.split(separator: "-").map(String.init)
         guard !parts.isEmpty else { return "" }
         var system = parts.removeFirst()
         if system == "xrOS" { system = "visionOS" }
-        return parts.isEmpty ? system : system + " " + parts.joined(separator: ".")
+        let version = parts.prefix { $0.allSatisfy(\.isNumber) }
+        return version.isEmpty ? system : system + " " + version.joined(separator: ".")
     }
 }
