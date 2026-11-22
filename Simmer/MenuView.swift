@@ -4,6 +4,7 @@ import SwiftUI
 /// What opens when the menu bar icon is clicked.
 struct MenuView: View {
     @Environment(SimulatorMonitor.self) private var monitor
+    @Environment(Updater.self) private var updater
     @State private var opensAtLogin = SMAppService.mainApp.status == .enabled
     /// Whether simulators have been listed since the menu was opened. When
     /// the last one goes, the gem is shown dimming rather than already dim.
@@ -97,6 +98,11 @@ struct MenuView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
             Spacer()
+            if let version = updater.availableVersion {
+                Button("Update to \(version)") { updater.checkForUpdates() }
+                    .controlSize(.small)
+                    .buttonStyle(.borderedProminent)
+            }
             Menu {
                 Toggle("Open at Login", isOn: Binding(
                     get: { opensAtLogin },
@@ -107,6 +113,8 @@ struct MenuView: View {
                     set: { monitor.setNotifiesWhenForgotten($0) }
                 ))
                 Divider()
+                Button("Check for Updates…") { updater.checkForUpdates() }
+                    .disabled(!updater.isEnabled)
                 Button("About Simmer") {
                     NSApplication.shared.activate(ignoringOtherApps: true)
                     NSApplication.shared.orderFrontStandardAboutPanel(nil)

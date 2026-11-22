@@ -11,16 +11,26 @@ settings:
     CURRENT_PROJECT_VERSION: 4
     SWIFT_VERSION: "6.0"
 
+packages:
+  # Automatic updates. Keep in step with scripts/sparkle-tools.sh.
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    exactVersion: 2.10.1
+
 targets:
   Simmer:
     type: application
     platform: macOS
     sources:
       - path: Simmer
+    dependencies:
+      - package: Sparkle
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: me.birchtree.Simmer
         GENERATE_INFOPLIST_FILE: YES
+        # Sparkle's settings, which Xcode merges into the generated file.
+        INFOPLIST_FILE: Simmer/Info.plist
         # A menu bar app: no Dock icon and no main window.
         INFOPLIST_KEY_LSUIElement: YES
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.developer-tools

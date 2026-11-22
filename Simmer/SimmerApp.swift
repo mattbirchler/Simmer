@@ -3,11 +3,13 @@ import SwiftUI
 @main
 struct SimmerApp: App {
     @State private var monitor = SimulatorMonitor()
+    @State private var updater = Updater()
 
     var body: some Scene {
         MenuBarExtra {
             MenuView()
                 .environment(monitor)
+                .environment(updater)
         } label: {
             // A gem: hollow when nothing is running, and filled with a
             // count when something is, green through red as things worsen.

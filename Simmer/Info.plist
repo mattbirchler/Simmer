@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Where Sparkle looks for new versions: a file attached to the latest GitHub release. -->
+	<key>SUFeedURL</key>
+	<string>https://github.com/mattbirchler/Simmer/releases/latest/download/appcast.xml</string>
+	<!-- Updates must be signed with the private half of this key. -->
+	<key>SUPublicEDKey</key>
+	<string>mQVW0HRRr8c4HkVbS+liRRIfdROv4myYS6uW+TgdGbA=</string>
+	<!-- Check once a day without asking first. -->
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUScheduledCheckInterval</key>
+	<integer>86400</integer>
+</dict>
+</plist>

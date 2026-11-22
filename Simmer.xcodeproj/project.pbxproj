@@ -17,8 +17,10 @@
 		901865D135CFAF807EBADDE4 /* ForgottenNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 188DFA467C99F4402E894D69 /* ForgottenNotifier.swift */; };
 		9356898C3922B0D77F27131E /* SimulatorMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50FE6B979F72B2412D47C92 /* SimulatorMonitor.swift */; };
 		935E422A0D02007DC4F686C9 /* Simulator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DD7B778476B32BABCC9C353 /* Simulator.swift */; };
+		99B70E5A13190CFC71DB685C /* Updater.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84AABE6C82707536D789A794 /* Updater.swift */; };
 		A91A4EE4DABBD9B19DF9DD38 /* SimulatorScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2718C679A5E06DCE9B6E09F4 /* SimulatorScanner.swift */; };
 		BC745BAEC695DB6DE2942EC6 /* Gem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363B559D9C5EB137BF198B48 /* Gem.swift */; };
+		C29AC878AD645137A7ABE6F6 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E95FA84EC2B4A5947F8FB374 /* Sparkle */; };
 		D740E29ACBE50CFFE94F298E /* Snapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E73F6EF8B29AD3E61F2E3E5 /* Snapshot.swift */; };
 /* End PBXBuildFile section */
 
@@ -30,14 +32,27 @@
 		3F56E466D5FAD8A8593974DA /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		5B0309928AF77742142AFB27 /* DeviceFrame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceFrame.swift; sourceTree = "<group>"; };
 		701A018823899CD83A9C5CC9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		84AABE6C82707536D789A794 /* Updater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Updater.swift; sourceTree = "<group>"; };
 		891F41F5E2476F97B9ED89A4 /* SimulatorControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatorControl.swift; sourceTree = "<group>"; };
 		8B5B492EBABDC1710073E479 /* Simmer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Simmer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8E73F6EF8B29AD3E61F2E3E5 /* Snapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Snapshot.swift; sourceTree = "<group>"; };
 		9BDF5A579FD853BB96A9FCEF /* Mood.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mood.swift; sourceTree = "<group>"; };
 		AA86F2C44BBF374D4F04CF7A /* MenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuView.swift; sourceTree = "<group>"; };
+		B3A804CFDE888B1A1E234A6E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		BFBB9E0D8B7A6B02B5B8F52D /* SimmerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimmerApp.swift; sourceTree = "<group>"; };
 		F50FE6B979F72B2412D47C92 /* SimulatorMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatorMonitor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		1AA986910236F10D49A4DF5B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C29AC878AD645137A7ABE6F6 /* Sparkle in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		5F350C1208220C287FB7DD27 /* Products */ = {
@@ -56,6 +71,7 @@
 				5B0309928AF77742142AFB27 /* DeviceFrame.swift */,
 				188DFA467C99F4402E894D69 /* ForgottenNotifier.swift */,
 				363B559D9C5EB137BF198B48 /* Gem.swift */,
+				B3A804CFDE888B1A1E234A6E /* Info.plist */,
 				AA86F2C44BBF374D4F04CF7A /* MenuView.swift */,
 				9BDF5A579FD853BB96A9FCEF /* Mood.swift */,
 				BFBB9E0D8B7A6B02B5B8F52D /* SimmerApp.swift */,
@@ -64,6 +80,7 @@
 				F50FE6B979F72B2412D47C92 /* SimulatorMonitor.swift */,
 				2718C679A5E06DCE9B6E09F4 /* SimulatorScanner.swift */,
 				8E73F6EF8B29AD3E61F2E3E5 /* Snapshot.swift */,
+				84AABE6C82707536D789A794 /* Updater.swift */,
 			);
 			path = Simmer;
 			sourceTree = "<group>";
@@ -85,6 +102,7 @@
 			buildPhases = (
 				3EB4B4811E65297F0EEF2D6E /* Sources */,
 				E604EFF47F9AB026251AE928 /* Resources */,
+				1AA986910236F10D49A4DF5B /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -92,6 +110,7 @@
 			);
 			name = Simmer;
 			packageProductDependencies = (
+				E95FA84EC2B4A5947F8FB374 /* Sparkle */,
 			);
 			productName = Simmer;
 			productReference = 8B5B492EBABDC1710073E479 /* Simmer.app */;
@@ -121,6 +140,9 @@
 			);
 			mainGroup = 8990FF8C30A8E69F627E55E0;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				30F8EEFF57A77B585217C0CB /* XCRemoteSwiftPackageReference "Sparkle" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 5F350C1208220C287FB7DD27 /* Products */;
 			projectDirPath = "";
@@ -159,6 +181,7 @@
 				9356898C3922B0D77F27131E /* SimulatorMonitor.swift in Sources */,
 				A91A4EE4DABBD9B19DF9DD38 /* SimulatorScanner.swift in Sources */,
 				D740E29ACBE50CFFE94F298E /* Snapshot.swift in Sources */,
+				99B70E5A13190CFC71DB685C /* Updater.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -299,6 +322,7 @@
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Simmer/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "MIT License";
@@ -322,6 +346,7 @@
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Simmer/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "MIT License";
@@ -356,6 +381,25 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		30F8EEFF57A77B585217C0CB /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = exactVersion;
+				version = 2.10.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		E95FA84EC2B4A5947F8FB374 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 30F8EEFF57A77B585217C0CB /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 5901C1E71EC1025B67DC6F9D /* Project object */;
 }
