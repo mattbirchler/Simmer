@@ -108,6 +108,10 @@ struct MenuView: View {
                     get: { opensAtLogin },
                     set: { setOpensAtLogin($0) }
                 ))
+                Toggle("Notify When Simulators Start", isOn: Binding(
+                    get: { monitor.notifiesWhenStarted },
+                    set: { monitor.setNotifiesWhenStarted($0) }
+                ))
                 Toggle("Notify About Forgotten Simulators", isOn: Binding(
                     get: { monitor.notifiesWhenForgotten },
                     set: { monitor.setNotifiesWhenForgotten($0) }
