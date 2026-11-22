@@ -100,7 +100,10 @@ final class SimulatorMonitor {
 
     func refresh() {
         let known = Dictionary(simulators.map { ($0.pid, $0) }, uniquingKeysWith: { first, _ in first })
-        let found = SimulatorScanner.scan(known: known)
+        var found = SimulatorScanner.scan(known: known)
+        #if DEBUG
+        found = Snapshot.aged(found)
+        #endif
         if found != simulators {
             let stillRunning = Set(found.map(\.pid))
             if let gone = simulators.last(where: { !stillRunning.contains($0.pid) }) {

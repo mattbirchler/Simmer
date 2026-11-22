@@ -6,6 +6,10 @@ import SwiftUI
 /// layout changes without clicking around. Debug builds only:
 ///
 ///     Simmer.app/Contents/MacOS/Simmer --snapshot menu.png
+///
+/// Add `--dark` for the dark appearance, and `--pretend-hours 3` or
+/// `--pretend-ages 0,1.5,3` to make simulators look like they have been
+/// running for longer.
 @MainActor
 enum Snapshot {
     /// The file to write, when the app was started with `--snapshot <file>`.
@@ -22,6 +26,28 @@ enum Snapshot {
         guard let flag = arguments.firstIndex(of: "--pretend-hours"), flag + 1 < arguments.count else { return 0 }
         return Double(arguments[flag + 1]) ?? 0
     }()
+
+    /// Extra hours for each simulator in turn, from `--pretend-ages 0,1.5,3`,
+    /// so one picture can show simulators of different ages.
+    static let pretendAges: [Double] = {
+        let arguments = CommandLine.arguments
+        guard let flag = arguments.firstIndex(of: "--pretend-ages"), flag + 1 < arguments.count else { return [] }
+        return arguments[flag + 1].split(separator: ",").compactMap { Double($0) }
+    }()
+
+    /// The simulators with their start times moved back by `pretendAges`.
+    static func aged(_ simulators: [Simulator]) -> [Simulator] {
+        guard !pretendAges.isEmpty else { return simulators }
+        return simulators.enumerated().map { index, simulator in
+            guard index < pretendAges.count else { return simulator }
+            return Simulator(id: simulator.id, pid: simulator.pid, name: simulator.name, runtime: simulator.runtime,
+                             kind: simulator.kind, bootedAt: simulator.bootedAt - pretendAges[index] * 3600,
+                             deviceSet: simulator.deviceSet)
+        }
+    }
+
+    /// Whether to take the picture in the dark appearance, from `--dark`.
+    static var isDark: Bool { CommandLine.arguments.contains("--dark") }
 
     /// The file to write the menu bar gems to, from `--gems <file>`.
     static var gemsDestination: URL? {
@@ -95,6 +121,9 @@ enum Snapshot {
         window.isOpaque = false
         window.backgroundColor = .clear
         window.contentView = view
+        if isDark {
+            window.appearance = NSAppearance(named: .darkAqua)
+        }
         view.layoutSubtreeIfNeeded()
 
         guard let image = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return }

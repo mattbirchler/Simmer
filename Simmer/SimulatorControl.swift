@@ -14,10 +14,27 @@ enum SimulatorControl {
     /// A JPEG of what's on the simulator's screen right now.
     static func screenshot(of simulator: Simulator) async -> Data? {
         guard let base = simctl(for: simulator) else { return nil }
+        if let picture = await screenshot(of: simulator, display: nil, simctl: base) { return picture }
+        // A folding iPhone has two screens, and simctl won't choose between
+        // them. Take both: the one that's switched off comes back black,
+        // which makes for a far smaller file, so keep the larger.
+        var best: Data?
+        for display in ["primary", "primary-1"] {
+            if let picture = await screenshot(of: simulator, display: display, simctl: base),
+               picture.count > best?.count ?? 0 {
+                best = picture
+            }
+        }
+        return best
+    }
+
+    private static func screenshot(of simulator: Simulator, display: String?, simctl base: [String]) async -> Data? {
         let file = FileManager.default.temporaryDirectory
             .appendingPathComponent("Simmer-\(simulator.id)-\(UUID().uuidString).jpg")
         defer { try? FileManager.default.removeItem(at: file) }
-        guard await run(base + ["io", simulator.id, "screenshot", "--type=jpeg", file.path]) == 0 else { return nil }
+        var arguments = base + ["io", simulator.id, "screenshot", "--type=jpeg"]
+        if let display { arguments.append("--display=\(display)") }
+        guard await run(arguments + [file.path]) == 0 else { return nil }
         return try? Data(contentsOf: file)
     }
 
