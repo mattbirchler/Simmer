@@ -51,7 +51,7 @@ No. It takes a quick look at the list of running apps every few seconds, which c
 It adds up every process running inside each simulator, the same way Activity Monitor's Memory column does, and a simulator is a whole copy of iOS. Memory that macOS has compressed or moved to disk is counted too, so the total can be more than your Mac has installed.
 
 **How do I get new versions?**
-Simmer checks for updates once a day. When there is one, an **Update** button appears at the bottom of its menu. Click it to see what's new and install it. You can also check any time from the gear, with **Check for Updates…**. Versions before 1.3 can't update themselves, so if you have one of those, download the latest once by hand.
+Simmer checks for updates once a day. When there is one, an **Update** button appears at the bottom of its menu. Click it to see what's new and install it. You can also check any time from the gear, with **Check for Updates…**.
 
 **How do I remove it?**
 Click the gem, then the gear, choose Quit Simmer, then drag Simmer from Applications to the Trash.
