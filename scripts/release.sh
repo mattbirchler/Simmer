@@ -40,6 +40,10 @@ xcodebuild -project Simmer.xcodeproj -scheme Simmer -configuration Release -deri
     || { grep -E "error:" "$OUT/build.log" >&2; echo "Build failed. See $OUT/build.log" >&2; exit 1; }
 APP="$OUT/Simmer.app"
 ditto build/Build/Products/Release/Simmer.app "$APP"
+# Xcode reuses the folder it built into, so the app would carry the date of
+# the very first build forever. macOS keeps app icons by path and date, and
+# an unchanged date leaves an old icon showing after an update.
+touch "$APP"
 
 echo "Signing with Developer ID" >&2
 # Sparkle's helpers are signed first, from the inside out, each with the
