@@ -113,6 +113,7 @@ enum Snapshot {
         let shape = RoundedRectangle(cornerRadius: 12, style: .continuous)
         let view = NSHostingView(rootView: MenuView()
             .environment(monitor)
+            .environment(Updater())
             .background(Color(nsColor: .windowBackgroundColor))
             .clipShape(shape)
             .overlay(shape.strokeBorder(.primary.opacity(0.15), lineWidth: 1)))

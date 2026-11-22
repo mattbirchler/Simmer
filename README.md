@@ -50,6 +50,9 @@ No. It takes a quick look at the list of running apps every few seconds, which c
 **Why is the memory figure so large?**
 It adds up every process running inside each simulator, the same way Activity Monitor's Memory column does, and a simulator is a whole copy of iOS. Memory that macOS has compressed or moved to disk is counted too, so the total can be more than your Mac has installed.
 
+**How do I get new versions?**
+Simmer checks for updates once a day. When there is one, an **Update** button appears at the bottom of its menu. Click it to see what's new and install it. You can also check any time from the gear, with **Check for Updates…**. Versions before 1.3 can't update themselves, so if you have one of those, download the latest once by hand.
+
 **How do I remove it?**
 Click the gem, then the gear, choose Quit Simmer, then drag Simmer from Applications to the Trash.
 
@@ -67,7 +70,9 @@ Then press Run in Xcode. No developer account is needed.
 
 How it works: every booted simulator has a `launchd_sim` process whose arguments point into the device's folder. Simmer finds those in the process list, reads the device's name and system version from its `device.plist`, and uses `xcrun simctl` to take screenshots and shut devices down. See [`SimulatorScanner.swift`](Simmer/SimulatorScanner.swift).
 
-The project file is generated from `project.yml` with [XcodeGen](https://github.com/yonaskolb/XcodeGen). If you add or remove files, run `xcodegen generate`. `scripts/release.sh` makes the signed, notarized disk image, and needs [create-dmg](https://github.com/create-dmg/create-dmg) (`brew install create-dmg`). The disk image's background is drawn by `scripts/make-dmg-background.swift`.
+The project file is generated from `project.yml` with [XcodeGen](https://github.com/yonaskolb/XcodeGen). If you add or remove files, run `xcodegen generate`. Updates are delivered with [Sparkle](https://sparkle-project.org). Each GitHub release carries an `appcast.xml` beside the disk image, and Simmer reads the one on the latest release. Development builds never check.
+
+To ship a version, raise `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` in `project.yml`, write a few lines of release notes for people in a Markdown file, and run `scripts/publish.sh notes.md`. That runs `scripts/release.sh`, which makes the signed, notarized disk image and the update feed, then creates the release. It needs [create-dmg](https://github.com/create-dmg/create-dmg) (`brew install create-dmg`) and the Sparkle signing key in your keychain under the account `simmer`. The disk image's background is drawn by `scripts/make-dmg-background.swift`.
 
 The app icon comes in two forms. `Simmer/AppIcon.icon` is the layered one that macOS 26 and later draw with their glass, dark and tinted styles, and it opens in Icon Composer. `scripts/make-icon.swift` draws the flat pictures that earlier versions of macOS show.
 
