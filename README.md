@@ -30,6 +30,7 @@ Simmer needs macOS 14 or newer, and Xcode (which is where simulators come from).
 - **Click the gem** to see each one, with a live picture of what's on its screen, how long it has been running, and how much memory it is holding. The top of the menu shows the total.
 - **Click Shut Down** next to a simulator to turn it off, or **Shut Down All** to turn them all off at once.
 - **Click the gear** and choose **Open at Login** so Simmer starts by itself whenever you turn on your Mac.
+- **Choose Notify When Simulators Start** from the gear to get a notification each time one starts up. It tells you which device and system it is, whether Xcode Previews or a test run started it, whether it started in the background with no Simulator window, and how many are now running.
 - **Choose Notify About Forgotten Simulators** from the gear to get a notification when one passes the two hour mark, with a Shut Down button on it. macOS asks for your permission the first time.
 
 The gem also turns orange when your Mac is getting short of memory while simulators are running, and red when it is nearly out, however long they have been on.

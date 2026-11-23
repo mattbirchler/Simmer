@@ -14,7 +14,6 @@
 		4CFA55677F127BF74C308436 /* SimmerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFBB9E0D8B7A6B02B5B8F52D /* SimmerApp.swift */; };
 		7C8C3F0CE0122BA283E9FE32 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 701A018823899CD83A9C5CC9 /* Assets.xcassets */; };
 		8CC64C490DC6EC73ECE35378 /* MenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA86F2C44BBF374D4F04CF7A /* MenuView.swift */; };
-		901865D135CFAF807EBADDE4 /* ForgottenNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 188DFA467C99F4402E894D69 /* ForgottenNotifier.swift */; };
 		9356898C3922B0D77F27131E /* SimulatorMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50FE6B979F72B2412D47C92 /* SimulatorMonitor.swift */; };
 		935E422A0D02007DC4F686C9 /* Simulator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DD7B778476B32BABCC9C353 /* Simulator.swift */; };
 		99B70E5A13190CFC71DB685C /* Updater.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84AABE6C82707536D789A794 /* Updater.swift */; };
@@ -22,14 +21,15 @@
 		BC745BAEC695DB6DE2942EC6 /* Gem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363B559D9C5EB137BF198B48 /* Gem.swift */; };
 		C29AC878AD645137A7ABE6F6 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E95FA84EC2B4A5947F8FB374 /* Sparkle */; };
 		D740E29ACBE50CFFE94F298E /* Snapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E73F6EF8B29AD3E61F2E3E5 /* Snapshot.swift */; };
+		FA49BD524D9DC2CAAA31E862 /* SimulatorNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A662DE2B9ECC9A0D3F248D8 /* SimulatorNotifier.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		188DFA467C99F4402E894D69 /* ForgottenNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForgottenNotifier.swift; sourceTree = "<group>"; };
 		2718C679A5E06DCE9B6E09F4 /* SimulatorScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatorScanner.swift; sourceTree = "<group>"; };
 		363B559D9C5EB137BF198B48 /* Gem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Gem.swift; sourceTree = "<group>"; };
 		3DD7B778476B32BABCC9C353 /* Simulator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Simulator.swift; sourceTree = "<group>"; };
 		3F56E466D5FAD8A8593974DA /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = AppIcon.icon; sourceTree = "<group>"; };
+		4A662DE2B9ECC9A0D3F248D8 /* SimulatorNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatorNotifier.swift; sourceTree = "<group>"; };
 		5B0309928AF77742142AFB27 /* DeviceFrame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceFrame.swift; sourceTree = "<group>"; };
 		701A018823899CD83A9C5CC9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		84AABE6C82707536D789A794 /* Updater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Updater.swift; sourceTree = "<group>"; };
@@ -69,7 +69,6 @@
 				3F56E466D5FAD8A8593974DA /* AppIcon.icon */,
 				701A018823899CD83A9C5CC9 /* Assets.xcassets */,
 				5B0309928AF77742142AFB27 /* DeviceFrame.swift */,
-				188DFA467C99F4402E894D69 /* ForgottenNotifier.swift */,
 				363B559D9C5EB137BF198B48 /* Gem.swift */,
 				B3A804CFDE888B1A1E234A6E /* Info.plist */,
 				AA86F2C44BBF374D4F04CF7A /* MenuView.swift */,
@@ -78,6 +77,7 @@
 				3DD7B778476B32BABCC9C353 /* Simulator.swift */,
 				891F41F5E2476F97B9ED89A4 /* SimulatorControl.swift */,
 				F50FE6B979F72B2412D47C92 /* SimulatorMonitor.swift */,
+				4A662DE2B9ECC9A0D3F248D8 /* SimulatorNotifier.swift */,
 				2718C679A5E06DCE9B6E09F4 /* SimulatorScanner.swift */,
 				8E73F6EF8B29AD3E61F2E3E5 /* Snapshot.swift */,
 				84AABE6C82707536D789A794 /* Updater.swift */,
@@ -171,7 +171,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				2662D37F464355839B16E2A3 /* DeviceFrame.swift in Sources */,
-				901865D135CFAF807EBADDE4 /* ForgottenNotifier.swift in Sources */,
 				BC745BAEC695DB6DE2942EC6 /* Gem.swift in Sources */,
 				8CC64C490DC6EC73ECE35378 /* MenuView.swift in Sources */,
 				2D1B5382A82EC54574D763D2 /* Mood.swift in Sources */,
@@ -179,6 +178,7 @@
 				935E422A0D02007DC4F686C9 /* Simulator.swift in Sources */,
 				0E4C1CE2C9E4293B0013392F /* SimulatorControl.swift in Sources */,
 				9356898C3922B0D77F27131E /* SimulatorMonitor.swift in Sources */,
+				FA49BD524D9DC2CAAA31E862 /* SimulatorNotifier.swift in Sources */,
 				A91A4EE4DABBD9B19DF9DD38 /* SimulatorScanner.swift in Sources */,
 				D740E29ACBE50CFFE94F298E /* Snapshot.swift in Sources */,
 				99B70E5A13190CFC71DB685C /* Updater.swift in Sources */,
